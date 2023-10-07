@@ -15,12 +15,13 @@ let currNote = "1"
 
 
 const loadBuffers = () => {
-	crunker.fetchAudio("/c3.mp3", "/db3.mp3", "/f3.mp3", "/g3.mp3", "/ab3.mp3")
+	return crunker.fetchAudio("/c3.mp3", "/db3.mp3", "/f3.mp3", "/g3.mp3", "/ab3.mp3")
 		.then(buffers => {
 			noteToBuffer = {1: buffers[0], 2: buffers[1], 3: buffers[2],
 				4: buffers[3], 5: buffers[4], }
 		})
 		.then(() => console.log("done"))
+		.then(sleep(3000))
 }
 
 const playMusic = async (seq, times) => {
@@ -46,6 +47,8 @@ const PlaySeqs = ({ seq, times }) => {
 	const totalTime = getTotalTime(times)
 	const [currSec, setCurrSec] = useState(0)
 	const [syncPlaying, setSyncPlaying] = useState(playing)
+	const [loading, setLoading] = useState(true)
+
 	const onMusicToggle = () => {
 		if(index == seq.length) {
 			index = 0
@@ -67,6 +70,7 @@ const PlaySeqs = ({ seq, times }) => {
 
 	useEffect(() => {
 		loadBuffers()
+			.then(() => setLoading(false))
 
 		const seekTimer = setInterval(() => {
 			if(playing)
@@ -103,6 +107,7 @@ const PlaySeqs = ({ seq, times }) => {
 
 			<Space h="2rem" />
 
+			{loading ? <Loading>Loading...</Loading> :
 			<Controls>
 				<Time>{msToReadable(currSec) + " / " + msToReadable(totalTime)}</Time>
 				<ControlButton onClick={onMusicToggle}>
@@ -110,6 +115,7 @@ const PlaySeqs = ({ seq, times }) => {
 				</ControlButton>
 				<Time style={{ opacity: 0 }}>{msToReadable(currSec) + "/" + msToReadable(totalTime)}</Time>
 			</Controls>
+			}
 
 		</Container>
 	)
@@ -123,6 +129,12 @@ const Controls = styled.div`
 	display: flex;
 	flex-direction: row;
 	align-items: center;
+`
+const Loading = styled.div`
+	color: #eee;
+	font-size: 1.1rem;
+	font-weight: bold;
+	text-align: center;
 `
 const Container = styled.div`
 	display: flex;
